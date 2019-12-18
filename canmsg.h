@@ -3,13 +3,11 @@
 
 #include <stdint.h>
 
+#define U16(lower, upper) (lower)|((upper) << 8)
+
 namespace CANMSG
 {
 
-    uint16_t U16(uint8_t lower, uint8_t upper)
-    {
-        return lower | (upper << 8);
-    }
 
     struct setpoints
     {
@@ -17,6 +15,17 @@ namespace CANMSG
         int16_t velocity;
         int16_t torque_limit_positive;
         int16_t torque_limit_negative;
+
+        setpoints(  uint8_t control_bits,
+                    int16_t velocity,
+                    int16_t torque_limit_positive,
+                    int16_t torque_limit_negative)
+            :control_bits(control_bits),
+              velocity(velocity),
+              torque_limit_positive(torque_limit_positive),
+              torque_limit_negative(torque_limit_negative)
+        {}
+
         void getbytes(uint8_t *bytes)
         {
             bytes[0] = 0;
@@ -33,9 +42,9 @@ namespace CANMSG
     struct AMK_1
     {
         uint8_t status;
-        uint16_t actual_velocity;
-        uint16_t torque_current;
-        uint16_t magnetizing_current;
+        int16_t actual_velocity;
+        int16_t torque_current;
+        int16_t magnetizing_current;
         AMK_1(uint8_t *bytes) :
             status(bytes[1]),
             actual_velocity(U16(bytes[2],bytes[3])),

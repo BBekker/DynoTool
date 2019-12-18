@@ -17,15 +17,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    canhandler.cpp \
     main.cpp \
-    dynoview.cpp
+    dynoview.cpp \
+    startup.cpp
 
 HEADERS += \
+    canhandler.h \
     canmsg.h \
-    dynoview.h
+    dynamicLoad.hpp \
+    dynoview.h \
+    startup.h
 
 FORMS += \
-    dynoview.ui
+    dynoview.ui \
+    startup.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

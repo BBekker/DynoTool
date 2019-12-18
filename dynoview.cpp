@@ -6,51 +6,35 @@
 #include <QDebug>
 #include <random>
 
-dynoview::dynoview(QWidget *parent)
+dynoview::dynoview(int id, QWidget *parent)
     : QMainWindow(parent)
+    , id(id)
     , ui(new Ui::dynoview)
 {
     ui->setupUi(this);
     connectControls();
-    connectToCAN();
     setupCharts();
 
 
     timer = new QTimer(this);
-    timer->setInterval(16);
-    connect(timer, &QTimer::timeout, this, &dynoview::plot);
+    timer->setInterval(32);
+    connect(timer, &QTimer::timeout, this, &dynoview::updateUI);
     timer->start();
+
 }
 
 
 void dynoview::connectControls()
 {
-    connect(ui->verticalSlider, &QSlider::valueChanged, this, [=](int value){ui->spinBox->setValue(value);});
-    connect(ui->verticalSlider_2, &QSlider::valueChanged, this, [=](int value){ui->spinBox_2->setValue(value);});
-    connect(ui->verticalSlider_2, &QSlider::valueChanged, this, [=](int value){
+    connect(ui->velocityControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox->setValue(value);});
+    connect(ui->torqueControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox_2->setValue(value);});
+    connect(ui->torqueControl, &QSlider::valueChanged, this, [=](int value){
         if(ui->checkBox->isChecked())
-            ui->verticalSlider_3->setValue(value);
+            ui->negTorqueControl->setValue(value);
     });
-    connect(ui->verticalSlider_3, &QSlider::valueChanged, this, [=](int value){ui->spinBox_3->setValue(-1*value);});
+    connect(ui->negTorqueControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox_3->setValue(-1*value);});
 }
 
-void dynoview::connectToCAN()
-{
-    if (QCanBus::instance()->plugins().contains(QStringLiteral("peakcan"))) {
-        std::cout << "pcan plugin available" << std::endl;
-    }
-
-    QString errorString;
-    const QList<QCanBusDeviceInfo> devices = QCanBus::instance()->availableDevices(
-        QStringLiteral("peakcan"), &errorString);
-    if (!errorString.isEmpty())
-        qDebug() << errorString;
-
-    for(auto device : devices)
-    {
-        QCanBus::instance()->createDevice(QStringLiteral("peakcan"), device.name());
-    }
-}
 
 void dynoview::setupCharts()
 {
@@ -86,6 +70,45 @@ void dynoview::plot()
     chart->removeAllSeries();
     chart->addSeries(series);
     chart->scroll(1,0);
+}
+
+void dynoview::sendSetpoints()
+{
+    int velocity = ui->velocityControl->value();
+    uint16_t torque = ui->torqueControl->value();
+    uint16_t neg_torque = ui->negTorqueControl->value();
+
+    emit setpoints(id, velocity, torque, neg_torque);
+}
+
+void dynoview::updateUI()
+{
+    ui->velocityDisplay->setText(QString("%1").arg(actual_velocity));
+    ui->IdDisplay->setText(QString("%1").arg(magnetizing_current,5,'f',2));
+    ui->IqDisplay->setText(QString("%1").arg(torque_current,5,'f',2));
+    ui->Error->setText(QString("%1").arg(errornum));
+}
+
+void dynoview::part_1(int id, uint8_t status, int16_t actual_velocity, double torque_current, double magnetizing_current)
+{
+    if(id == this->id)
+    {
+        this->status = status;
+        this->actual_velocity = actual_velocity;
+        this->torque_current = torque_current;
+        this->magnetizing_current = magnetizing_current;
+    }
+}
+
+void dynoview::part_2(int id, uint16_t temperature_motor, uint16_t temperature_inverter, uint16_t error, uint16_t temperature_igbt)
+{
+    if(id == this->id)
+    {
+        this->Tmotor = temperature_motor;
+        this->Tinverter = temperature_inverter;
+        this->Tigbt = temperature_igbt;
+        this->errornum = error;
+    }
 }
 
 dynoview::~dynoview()
