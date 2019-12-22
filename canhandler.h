@@ -21,6 +21,8 @@ public:
 public slots:
     void onPacket();
     void setpoints(int id, int velocity, uint16_t torque, uint16_t neg_torque);
+    void enable(int id, bool enable);
+    void error_reset(int id, bool reset);
 signals:
     void newMotor(int id);
     void part_1(int id, uint8_t status, int16_t actual_velocity, double torque_current, double magnetizing_current);
@@ -40,7 +42,8 @@ private:
         uint16_t torque;
         uint16_t neg_torque;
         uint8_t status;
-        uint8_t control_bits;
+        bool enable_bit;
+        bool error_reset;
     };
 
     std::array<motorvalues,MAX_DEVICES> devices{};

@@ -19,8 +19,19 @@ void CANHandler::run()
 
 void CANHandler::setpoints(int id, int velocity, uint16_t torque, uint16_t neg_torque)
 {
-    int can_id = id+mc_setpoints;
-    uint8_t bits = 0;
+    devices[id].velocity = velocity;
+    devices[id].torque = torque;
+    devices[id].neg_torque = neg_torque;
+}
+
+void CANHandler::enable(int id, bool enable)
+{
+    devices[id].enable_bit = enable;
+}
+
+void CANHandler::error_reset(int id, bool reset)
+{
+    devices[id].error_reset = reset;
 }
 
 void CANHandler::connectToCAN()
@@ -54,7 +65,7 @@ void CANHandler::connectToCAN()
 
 void CANHandler::sendSetpoints()
 {
-    for(int i = 0; i< devices.size(); i++)
+    for(unsigned int i = 0; i< devices.size(); i++)
     {
         auto device = devices[i];
         if(device.connected)

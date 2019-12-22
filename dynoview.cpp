@@ -26,6 +26,10 @@ dynoview::dynoview(int id, QWidget *parent)
 
 void dynoview::connectControls()
 {
+    connect(ui->velocityControl, &QSlider::valueChanged, this, &dynoview::sendSetpoints);
+    connect(ui->torqueControl, &QSlider::valueChanged, this, &dynoview::sendSetpoints);
+    connect(ui->negTorqueControl, &QSlider::valueChanged, this, &dynoview::sendSetpoints);
+
     connect(ui->velocityControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox->setValue(value);});
     connect(ui->torqueControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox_2->setValue(value);});
     connect(ui->torqueControl, &QSlider::valueChanged, this, [=](int value){
@@ -33,6 +37,7 @@ void dynoview::connectControls()
             ui->negTorqueControl->setValue(value);
     });
     connect(ui->negTorqueControl, &QSlider::valueChanged, this, [=](int value){ui->spinBox_3->setValue(-1*value);});
+
 }
 
 

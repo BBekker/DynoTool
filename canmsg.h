@@ -4,9 +4,13 @@
 #include <stdint.h>
 
 #define U16(lower, upper) (lower)|((upper) << 8)
+#define control_bits(inverter, dc, enable, error_reset) ((inverter) | ((dc)<<1) | ((enable) << 2) | ((error_reset) <<3))
+
 
 namespace CANMSG
 {
+
+
 
 
     struct setpoints
